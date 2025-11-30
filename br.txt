@@ -1650,6 +1650,18 @@ blatant:AddButton("Load WalkSpeed", function()
     library:Notify("Loaded Successfully!", 2)
 end)
 
+blatant:AddButton("Load JumpPower", function()
+    if getgenv().Loaded_Extras then
+        library:Notify("Already Loaded!", 2)
+        return
+    end
+
+    getgenv().Loaded_Extras = true
+
+    loadstring(game:HttpGet("https://pastebin.com/raw/N2QRSEUt"))()
+    library:Notify("Loaded Successfully!", 2)
+end)
+
 --// ESP UI (Linoria)
 local ESPGroup = Tabs.visuals:AddLeftGroupbox("ESP")
 
