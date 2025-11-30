@@ -1466,6 +1466,14 @@ main:AddToggle('resolver', {
     Callback = function(value) Divine.Camlock.resolver = value end
 })
 
+main:AddToggle("view_at_toggle", {
+    Text = "View At",
+    Default = false,
+    Callback = function(state)
+        getgenv().Divine_ViewAt = state
+    end
+})
+
 main:AddDropdown('method', {
     Text = 'Hook Method',
     Values = {'Namecall', 'Index'},
