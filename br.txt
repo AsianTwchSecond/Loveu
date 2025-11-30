@@ -1113,7 +1113,7 @@ VisualizeGui.Enabled = true
 local Img = Instance.new("ImageLabel")
 Img.Size = UDim2.new(0, 10, 0, 10)  -- small like dot size
 Img.BackgroundTransparency = 1
-Img.Image = "rbxassetid://11722153703"   -- <<<< IMAGE ID REPLACED HERE
+Img.Image = "rbxassetid://11722153703"
 Img.Visible = false
 Img.Parent = VisualizeGui
 
@@ -1123,14 +1123,22 @@ RunService.RenderStepped:Connect(function()
         return
     end
 
-    local target = getgenv().Divine.Targetaim.target
-    if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
-        local hrp = target.Character.HumanoidRootPart
-        local pos, onScreen = Camera:WorldToViewportPoint(hrp.Position)
+    local target = getgenv().Divine.Targetaim and getgenv().Divine.Targetaim.target
+    if target and target.Character then
+        local hrp = target.Character:FindFirstChild("HumanoidRootPart")
 
-        if onScreen then
-            Img.Visible = true
-            Img.Position = UDim2.new(0, pos.X - (Img.AbsoluteSize.X / 2), 0, pos.Y - (Img.AbsoluteSize.Y / 2))
+        if hrp then
+            -- ★ OFFSET TO UPPERTORSO (NO MORE ON GROUND)
+            local pos, onScreen = Camera:WorldToViewportPoint(
+                hrp.Position + Vector3.new(0, 1.5, 0)
+            )
+
+            if onScreen then
+                Img.Visible = true
+                Img.Position = UDim2.new(0, pos.X - (Img.AbsoluteSize.X / 2), 0, pos.Y - (Img.AbsoluteSize.Y / 2))
+            else
+                Img.Visible = false
+            end
         else
             Img.Visible = false
         end
