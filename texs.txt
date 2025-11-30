@@ -16,6 +16,169 @@ getgenv().triggerbot = getgenv().triggerbot or {
     BlacklistedTools = {},
 }
 
+--=============================================
+--  BLACK CHAMS ENGINE (Self / Accessories / Tools)
+--  Step 1 to Step 5 (FULL SYSTEM)
+--=============================================
+
+getgenv().CharmStates = {
+    Self = false,
+    Accessories = false,
+    Tools = false
+}
+
+local Players = game:GetService("Players")
+local Player = Players.LocalPlayer
+local Black = Color3.fromRGB(0, 0, 0)
+
+local OriginalProps = {}     -- stores original material + color
+local CharmConnections = {}  -- stores signals for cleanup
+
+
+--=============================================
+--  STEP 2 - Save & Restore
+--=============================================
+
+local function SavePart(part)
+    if not OriginalProps[part] then
+        OriginalProps[part] = {
+            Material = part.Material,
+            Color = part.Color
+        }
+    end
+end
+
+local function RestorePart(part)
+    local data = OriginalProps[part]
+    if data then
+        part.Material = data.Material
+        part.Color = data.Color
+        OriginalProps[part] = nil
+    end
+end
+
+
+--=============================================
+--  STEP 3 - Individual Charm Functions
+--=============================================
+
+-- SELF CHARM
+local function ApplySelfCharm(Char)
+    for _, v in ipairs(Char:GetDescendants()) do
+        if v:IsA("BasePart") and v.Parent:IsA("Model") then
+            SavePart(v)
+            v.Material = Enum.Material.ForceField
+            v.Color = Black
+        end
+    end
+end
+
+local function RemoveSelfCharm(Char)
+    for _, v in ipairs(Char:GetDescendants()) do
+        if v:IsA("BasePart") and v.Parent:IsA("Model") then
+            RestorePart(v)
+        end
+    end
+end
+
+
+-- ACCESSORIES CHARM
+local function ApplyAccCharm(Char)
+    for _, acc in ipairs(Char:GetChildren()) do
+        if acc:IsA("Accessory") and acc:FindFirstChild("Handle") then
+            SavePart(acc.Handle)
+            acc.Handle.Material = Enum.Material.ForceField
+            acc.Handle.Color = Black
+        end
+    end
+end
+
+local function RemoveAccCharm(Char)
+    for _, acc in ipairs(Char:GetChildren()) do
+        if acc:IsA("Accessory") and acc:FindFirstChild("Handle") then
+            RestorePart(acc.Handle)
+        end
+    end
+end
+
+
+-- TOOL CHARM
+local function ApplyToolCharm(Char)
+    for _, tool in ipairs(Char:GetChildren()) do
+        if tool:IsA("Tool") then
+            for _, v in ipairs(tool:GetDescendants()) do
+                if v:IsA("BasePart") then
+                    SavePart(v)
+                    v.Material = Enum.Material.ForceField
+                    v.Color = Black
+                end
+            end
+        end
+    end
+end
+
+local function RemoveToolCharm(Char)
+    for _, tool in ipairs(Char:GetChildren()) do
+        if tool:IsA("Tool") then
+            for _, v in ipairs(tool:GetDescendants()) do
+                if v:IsA("BasePart") then
+                    RestorePart(v)
+                end
+            end
+        end
+    end
+end
+
+
+--=============================================
+--  STEP 4 - Update Chams (Master Controller)
+--=============================================
+
+local function UpdateChams()
+    local Char = Player.Character
+    if not Char then return end
+
+    -- SELF
+    if CharmStates.Self then
+        ApplySelfCharm(Char)
+    else
+        RemoveSelfCharm(Char)
+    end
+
+    -- ACCESSORIES
+    if CharmStates.Accessories then
+        ApplyAccCharm(Char)
+    else
+        RemoveAccCharm(Char)
+    end
+
+    -- TOOLS
+    if CharmStates.Tools then
+        ApplyToolCharm(Char)
+    else
+        RemoveToolCharm(Char)
+    end
+end
+
+
+--=============================================
+--  STEP 5 - Respawn & Tool Handling
+--=============================================
+
+Player.CharacterAdded:Connect(function(Char)
+    task.wait(0.3)
+    UpdateChams()
+
+    local c = Char.ChildAdded:Connect(function(child)
+        if child:IsA("Tool") then
+            task.wait(0.1)
+            UpdateChams()
+        end
+    end)
+
+    table.insert(CharmConnections, c)
+end)
+
 getgenv().stile = {
     hitbox_expander = {
         Enabled = false,
@@ -937,20 +1100,13 @@ end)
 
 getgenv().Divine.Visualize = getgenv().Divine.Visualize or {enabled = false}
 
-local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
+local RunService = game:GetService("RunService")
+local Camera = workspace.CurrentCamera
 
-local highlight = Instance.new("Highlight")
-highlight.FillColor = Color3.fromRGB(10, 10, 10)
-highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
-highlight.FillTransparency = 0.4
-highlight.OutlineTransparency = 0
-highlight.Enabled = false
-highlight.Parent = game:GetService("CoreGui")
-
+-- ⭐ DOT ONLY
 local dot = Drawing.new("Circle")
-dot.Color = Color3.fromRGB(250, 250, 250)
+dot.Color = Color3.fromRGB(255, 255, 255)
 dot.Thickness = 2
 dot.Filled = true
 dot.Radius = 4
@@ -958,7 +1114,6 @@ dot.Visible = false
 
 RunService.RenderStepped:Connect(function()
     if not getgenv().Divine.Visualize.enabled then
-        highlight.Enabled = false
         dot.Visible = false
         return
     end
@@ -967,18 +1122,22 @@ RunService.RenderStepped:Connect(function()
     if target and target.Character then
         local hrp = target.Character:FindFirstChild("HumanoidRootPart")
 
-        highlight.Adornee = target.Character
-        highlight.Enabled = true
-
         if hrp then
-            local pos, onScreen = workspace.CurrentCamera:WorldToViewportPoint(hrp.Position)
-            dot.Visible = onScreen
+            -- ⭐ NORMAL HEAD OFFSET (same as old system)
+            local pos, onScreen = Camera:WorldToViewportPoint(
+                hrp.Position + Vector3.new(0, 1.5, 0)
+            )
+
             if onScreen then
+                dot.Visible = true
                 dot.Position = Vector2.new(pos.X, pos.Y)
+            else
+                dot.Visible = false
             end
+        else
+            dot.Visible = false
         end
     else
-        highlight.Enabled = false
         dot.Visible = false
     end
 end)
@@ -1189,8 +1348,10 @@ local speed = Tabs.combat:AddRightGroupbox('CFrame')
 local hit_group = Tabs.visuals:AddLeftGroupbox('Hit Sounds')
 local circleBox = Tabs.visuals:AddLeftGroupbox('Visuals')
 local imp = Tabs.visuals:AddRightGroupbox('important')
+local blatant = Tabs.visuals:AddRightGroupbox('Blatant')
 local hvh = Tabs.raging:AddLeftGroupbox('HVH Orbit')
 local ant = Tabs.visuals:AddRightGroupbox('Antilocks')
+local charm = Tabs.visuals:AddRightGroupbox('Charms') 
 local at = Tabs.raging:AddRightGroupbox('Autos')
 
 getgenv().AutoReloadEnabled = false
@@ -1637,6 +1798,30 @@ circleBox:AddToggle("esp_tracer", {
 	end
 })
 
+blatant:AddButton("Load WalkSpeed", function()
+    if getgenv().Loaded_Extra then
+        library:Notify("Already Loaded!", 2)
+        return
+    end
+
+    getgenv().Loaded_Extra = true
+
+    loadstring(game:HttpGet("https://pastebin.com/raw/nabv9FbK"))()
+    library:Notify("Loaded Successfully!", 2)
+end)
+
+blatant:AddButton("Load JumpPower", function()
+    if getgenv().Loaded_Extras then
+        library:Notify("Already Loaded!", 2)
+        return
+    end
+
+    getgenv().Loaded_Extras = true
+
+    loadstring(game:HttpGet("https://pastebin.com/raw/N2QRSEUt"))()
+    library:Notify("Loaded Successfully!", 2)
+end)
+
 --// ESP UI (Linoria)
 local ESPGroup = Tabs.visuals:AddLeftGroupbox("ESP")
 
@@ -1710,6 +1895,55 @@ ESPGroup:AddToggle("TeamCheckESP", {
 }):OnChanged(function(v)
     ESPSettings.TeamCheck = v
 end)
+
+ESPGroup:AddToggle("ambient_toggle", {
+    Text = "Ambient",
+    Default = false,
+    Callback = function(state)
+        local Lighting = game:GetService("Lighting")
+
+        if state then
+            -- ENABLE AMBIENT
+            Lighting.Ambient = Color3.fromRGB(120, 120, 255)
+            Lighting.OutdoorAmbient = Color3.fromRGB(120, 120, 255)
+            Lighting.EnvironmentDiffuseScale = 1
+            Lighting.EnvironmentSpecularScale = 1
+        else
+            -- DISABLE / RESET AMBIENT
+            Lighting.Ambient = Color3.fromRGB(127, 127, 127)
+            Lighting.OutdoorAmbient = Color3.fromRGB(127, 127, 127)
+            Lighting.EnvironmentDiffuseScale = 0
+            Lighting.EnvironmentSpecularScale = 0
+        end
+    end
+})
+
+charm:AddToggle('SelfCharm', {
+    Text = 'Self Charm',
+    Default = false,
+    Callback = function(v)
+        CharmStates.Self = v
+        UpdateChams()
+    end
+})
+
+charm:AddToggle('AccCharm', {
+    Text = 'Accessories Charm',
+    Default = false,
+    Callback = function(v)
+        CharmStates.Accessories = v
+        UpdateChams()
+    end
+})
+
+charm:AddToggle('ToolCharm', {
+    Text = 'Tool Charm',
+    Default = false,
+    Callback = function(v)
+        CharmStates.Tools = v
+        UpdateChams()
+    end
+})
 
 hit_group:AddToggle('detection', {
     Text = 'Hit Detection',
@@ -2402,3 +2636,24 @@ Players.PlayerAdded:Connect(function(plr)
         end)
     end
 end)
+
+local Lighting = game:GetService("Lighting")
+
+function ApplyAmbient()
+    if not getgenv().DivineAmbient.Enabled then return end
+
+    Lighting.Ambient = getgenv().DivineAmbient.Color
+    Lighting.OutdoorAmbient = getgenv().DivineAmbient.Color
+
+    Lighting.EnvironmentDiffuseScale = 1
+    Lighting.EnvironmentSpecularScale = 1
+
+    Lighting.Brightness = 2.5
+    Lighting.ClockTime = 14
+end
+
+function ResetAmbient()
+    -- reset to Roblox default
+    Lighting.Ambient = Color3.fromRGB(127, 127, 127)
+    Lighting.OutdoorAmbient = Color3.fromRGB(127, 127, 127)
+end
