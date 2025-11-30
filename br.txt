@@ -1637,33 +1637,6 @@ circleBox:AddToggle("esp_tracer", {
 	end
 })
 
-getgenv().DivineAmbient = {
-    Enabled = false,
-    Color = Color3.fromRGB(120, 120, 255)
-}
-
-ESPGroup:AddToggle("ambient_toggle", {
-    Text = "Ambient",
-    Default = false,
-    Callback = function(state)
-        if state then
-            -- ON: Apply ambient
-            local Lighting = game:GetService("Lighting")
-            Lighting.Ambient = Color3.fromRGB(120, 120, 255)
-            Lighting.OutdoorAmbient = Color3.fromRGB(120, 120, 255)
-            Lighting.EnvironmentDiffuseScale = 1
-            Lighting.EnvironmentSpecularScale = 1
-        else
-            -- OFF: Reset to default
-            local Lighting = game:GetService("Lighting")
-            Lighting.Ambient = Color3.fromRGB(127, 127, 127)
-            Lighting.OutdoorAmbient = Color3.fromRGB(127, 127, 127)
-            Lighting.EnvironmentDiffuseScale = 0
-            Lighting.EnvironmentSpecularScale = 0
-        end
-    end
-})
-
 --// ESP UI (Linoria)
 local ESPGroup = Tabs.visuals:AddLeftGroupbox("ESP")
 
@@ -1737,6 +1710,28 @@ ESPGroup:AddToggle("TeamCheckESP", {
 }):OnChanged(function(v)
     ESPSettings.TeamCheck = v
 end)
+
+ESPGroup:AddToggle("ambient_toggle", {
+    Text = "Ambient",
+    Default = false,
+    Callback = function(state)
+        local Lighting = game:GetService("Lighting")
+
+        if state then
+            -- ENABLE AMBIENT
+            Lighting.Ambient = Color3.fromRGB(120, 120, 255)
+            Lighting.OutdoorAmbient = Color3.fromRGB(120, 120, 255)
+            Lighting.EnvironmentDiffuseScale = 1
+            Lighting.EnvironmentSpecularScale = 1
+        else
+            -- DISABLE / RESET AMBIENT
+            Lighting.Ambient = Color3.fromRGB(127, 127, 127)
+            Lighting.OutdoorAmbient = Color3.fromRGB(127, 127, 127)
+            Lighting.EnvironmentDiffuseScale = 0
+            Lighting.EnvironmentSpecularScale = 0
+        end
+    end
+})
 
 hit_group:AddToggle('detection', {
     Text = 'Hit Detection',
