@@ -16,6 +16,134 @@ getgenv().triggerbot = getgenv().triggerbot or {
     BlacklistedTools = {},
 }
 
+--=================================================
+-- BULLET TRAIL ENGINE (Toggle + Style Selector Ready)
+--=================================================
+
+local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
+
+getgenv().BulletTrails = {
+    Enabled = false,
+    Style = "Black",
+    Connection = nil
+}
+
+-- TEXTURES
+local Textures = {
+	Electro = "rbxassetid://139193109954329",
+	Cool    = "rbxassetid://116848240236550",
+	Cum     = "rbxassetid://88263664141635"
+}
+
+-- STYLE DATA
+local Styles = {
+	Black = { Color = Color3.fromRGB(0,0,0), Width = 1, Texture = nil },
+	NeonWhite = { Color = Color3.fromRGB(255,255,255), Width = 1, Texture = nil },
+	Anime = { Color = Color3.fromRGB(255,0,125), Width = 1.2, Texture = Textures.Electro },
+	Rainbow = { Color = "Rainbow", Width = 1.3, Texture = nil },
+	Fat = { Color = Color3.fromRGB(0,0,0), Width = 3, Texture = Textures.Electro },
+	Thin = { Color = Color3.fromRGB(255,255,255), Width = 0.5, Texture = nil },
+	Electro = { Color = Color3.fromRGB(0,170,255), Width = 1, Texture = Textures.Electro },
+	Cool = { Color = Color3.fromRGB(125,125,255), Width = 1, Texture = Textures.Cool },
+	Cum = { Color = Color3.fromRGB(255,255,255), Width = 1, Texture = Textures.Cum },
+	Random = { Color = "Random", Width = "Random", Texture = "Random" },
+	FPS = { Color = Color3.fromRGB(200,200,200), Width = 0.5, Texture = nil, FastMode = true }
+}
+
+-- Bullet Folder
+local function GetBulletFolder()
+	if Workspace:FindFirstChild("Ignored") then
+		local Ignored = Workspace.Ignored
+
+		if Ignored:FindFirstChild("Siren") and Ignored.Siren:FindFirstChild("Radius") then
+			return Ignored.Siren.Radius
+		end
+		return Ignored
+	end
+	return Workspace
+end
+
+local BulletFolder = GetBulletFolder()
+
+-- Create Trail
+local function CreateTrail(bullet)
+	if not BulletTrails.Enabled then return end
+
+	local style = Styles[BulletTrails.Style]
+	if not style then return end
+	if bullet:FindFirstChild("GunBeam") then return end
+
+	-- Rainbow / Random handler
+	local BeamColor = (
+		style.Color == "Rainbow" and ColorSequence.new{
+			ColorSequenceKeypoint.new(0, Color3.fromRGB(255,0,0)),
+			ColorSequenceKeypoint.new(0.25, Color3.fromRGB(255,255,0)),
+			ColorSequenceKeypoint.new(0.5, Color3.fromRGB(0,255,0)),
+			ColorSequenceKeypoint.new(0.75, Color3.fromRGB(0,255,255)),
+			ColorSequenceKeypoint.new(1, Color3.fromRGB(0,0,255))
+		}
+	) or (
+		style.Color == "Random" and ColorSequence.new(Color3.fromRGB(math.random(50,255), math.random(50,255), math.random(50,255)))
+	) or ColorSequence.new(style.Color)
+
+	local BeamWidth = (style.Width == "Random" and math.random(1,3)) or style.Width
+
+	local Texture = (style.Texture == "Random" and Textures[{"Electro","Cool","Cum"}[math.random(1,3)]]) or style.Texture
+
+	-- attachments
+	local a0 = Instance.new("Attachment", bullet)
+	local a1 = Instance.new("Attachment", bullet)
+	a1.Position = Vector3.new(0,0,-2)
+
+	local beam = Instance.new("Beam", bullet)
+	beam.Attachment0 = a0
+	beam.Attachment1 = a1
+	beam.Color = BeamColor
+	beam.Width0 = BeamWidth
+	beam.Width1 = BeamWidth
+	beam.FaceCamera = true
+
+	if Texture then
+		beam.Texture = Texture
+		beam.TextureSpeed = 3
+		beam.TextureLength = 1
+	end
+
+	local Duration = style.FastMode and 0.2 or 1.2
+
+	task.delay(Duration, function()
+		if bullet and bullet.Parent then
+			bullet:Destroy()
+		end
+	end)
+end
+
+-- TURN ON
+function EnableBulletTrails()
+    BulletTrails.Enabled = true
+
+    if BulletTrails.Connection then
+        BulletTrails.Connection:Disconnect()
+    end
+
+    BulletTrails.Connection = BulletFolder.ChildAdded:Connect(function(child)
+        if child:IsA("Part") or child:IsA("MeshPart") then
+            CreateTrail(child)
+        end
+    end)
+end
+
+-- TURN OFF
+function DisableBulletTrails()
+    BulletTrails.Enabled = false
+
+    if BulletTrails.Connection then
+        BulletTrails.Connection:Disconnect()
+        BulletTrails.Connection = nil
+    end
+end
+
 --=============================================
 --  BLACK CHAMS ENGINE (Self / Accessories / Tools)
 --  Step 1 to Step 5 (FULL SYSTEM)
@@ -1356,6 +1484,7 @@ local blatant = Tabs.visuals:AddRightGroupbox('Blatant')
 local hvh = Tabs.raging:AddLeftGroupbox('HVH Orbit')
 local ant = Tabs.visuals:AddRightGroupbox('Antilocks')
 local charm = Tabs.visuals:AddRightGroupbox('Charms') 
+local bull = Tabs.visuals:AddRightGroupbox('Bullet')
 local at = Tabs.raging:AddRightGroupbox('Autos')
 
 getgenv().AutoReloadEnabled = false
@@ -1946,6 +2075,30 @@ charm:AddToggle('ToolCharm', {
     Callback = function(v)
         CharmStates.Tools = v
         UpdateChams()
+    end
+})
+
+bull:AddToggle('BulletTrailsToggle', {
+    Text = 'Bullet Trails',
+    Default = false,
+    Callback = function(v)
+        if v then
+            EnableBulletTrails()
+        else
+            DisableBulletTrails()
+        end
+    end
+})
+
+bull:AddDropdown('BulletTrailStyle', {
+    Text = 'Trail Style',
+    Default = 'Black',
+    Values = {
+        'Black', 'NeonWhite', 'Anime', 'Rainbow', 'Fat',
+        'Thin', 'Electro', 'Cool', 'Cum', 'Random', 'FPS'
+    },
+    Callback = function(value)
+        BulletTrails.Style = value
     end
 })
 
