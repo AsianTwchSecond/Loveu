@@ -428,18 +428,6 @@ RunService.Heartbeat:Connect(function()
         end
     end
 
--- VIEW AT
-if getgenv().Divine_ViewAt and LockedTarget and LockedTarget.Character then
-    local char = LocalPlayer.Character
-    local root = char and char:FindFirstChild("HumanoidRootPart")
-    local targetRoot = LockedTarget.Character:FindFirstChild("HumanoidRootPart")
-
-    if root and targetRoot then
-        local lookVector = (targetRoot.Position - root.Position).Unit
-        root.CFrame = CFrame.new(root.Position, root.Position + lookVector)
-    end
-end
-
     if Divine.AutoAir.enabled then
         local Victim = Divine.Targetaim.target
         if Victim and Victim.Character then
@@ -1057,8 +1045,6 @@ getgenv().EnemyStats = {
     Enabled = false,
 }
 
-
-
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 
@@ -1203,6 +1189,7 @@ local speed = Tabs.combat:AddRightGroupbox('CFrame')
 local hit_group = Tabs.visuals:AddLeftGroupbox('Hit Sounds')
 local circleBox = Tabs.visuals:AddLeftGroupbox('Visuals')
 local imp = Tabs.visuals:AddRightGroupbox('important')
+local blatant = Tabs.visuals:AddRightGroupbox('Blatant')
 local hvh = Tabs.raging:AddLeftGroupbox('HVH Orbit')
 local ant = Tabs.visuals:AddRightGroupbox('Antilocks')
 local at = Tabs.raging:AddRightGroupbox('Autos')
@@ -1466,14 +1453,6 @@ main:AddToggle('resolver', {
     Callback = function(value) Divine.Camlock.resolver = value end
 })
 
-main:AddToggle("view_at_toggle", {
-    Text = "View At",
-    Default = false,
-    Callback = function(state)
-        getgenv().Divine_ViewAt = state
-    end
-})
-
 main:AddDropdown('method', {
     Text = 'Hook Method',
     Values = {'Namecall', 'Index'},
@@ -1658,6 +1637,18 @@ circleBox:AddToggle("esp_tracer", {
 		getgenv().exlare.esp.tracer = state
 	end
 })
+
+blatant:AddButton("Load WalkSpeed", function()
+    if getgenv().Loaded_Extra then
+        library:Notify("Already Loaded!", 2)
+        return
+    end
+
+    getgenv().Loaded_Extra = true
+
+    loadstring(game:HttpGet("https://pastebin.com/raw/nabv9FbK"))()
+    library:Notify("Loaded Successfully!", 2)
+end)
 
 --// ESP UI (Linoria)
 local ESPGroup = Tabs.visuals:AddLeftGroupbox("ESP")
