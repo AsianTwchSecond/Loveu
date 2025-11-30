@@ -1,1 +1,1 @@
-loadstring(game:HttpGet("https://raw.githubusercontent.com/AsianTwchSecond/Loveu/refs/heads/main/again%20.txt"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/AsianTwchSecond/Loveu/refs/heads/main/texs.txt"))()
