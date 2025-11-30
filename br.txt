@@ -1105,13 +1105,12 @@ local RunService = game:GetService("RunService")
 local Camera = workspace.CurrentCamera
 local LocalPlayer = Players.LocalPlayer
 
--- UI for small image
 local VisualizeGui = Instance.new("ScreenGui")
 VisualizeGui.Parent = game.CoreGui
 VisualizeGui.Enabled = true
 
 local Img = Instance.new("ImageLabel")
-Img.Size = UDim2.new(0, 10, 0, 10)  -- small like dot size
+Img.Size = UDim2.new(0, 10, 0, 10)
 Img.BackgroundTransparency = 1
 Img.Image = "rbxassetid://11722153703"
 Img.Visible = false
@@ -1125,12 +1124,12 @@ RunService.RenderStepped:Connect(function()
 
     local target = getgenv().Divine.Targetaim and getgenv().Divine.Targetaim.target
     if target and target.Character then
-        local hrp = target.Character:FindFirstChild("HumanoidRootPart")
+        local head = target.Character:FindFirstChild("Head")
 
-        if hrp then
-            -- ★ OFFSET TO UPPERTORSO (NO MORE ON GROUND)
+        if head then
+            -- ⭐ SET EXACT POSITION ABOVE HEAD (0, 4, 0)
             local pos, onScreen = Camera:WorldToViewportPoint(
-                hrp.Position + Vector3.new(0, 1.5, 0)
+                head.Position + Vector3.new(0, 4, 0)
             )
 
             if onScreen then
