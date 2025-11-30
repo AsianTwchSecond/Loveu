@@ -16,6 +16,169 @@ getgenv().triggerbot = getgenv().triggerbot or {
     BlacklistedTools = {},
 }
 
+--=============================================
+--  BLACK CHAMS ENGINE (Self / Accessories / Tools)
+--  Step 1 to Step 5 (FULL SYSTEM)
+--=============================================
+
+getgenv().CharmStates = {
+    Self = false,
+    Accessories = false,
+    Tools = false
+}
+
+local Players = game:GetService("Players")
+local Player = Players.LocalPlayer
+local Black = Color3.fromRGB(0, 0, 0)
+
+local OriginalProps = {}     -- stores original material + color
+local CharmConnections = {}  -- stores signals for cleanup
+
+
+--=============================================
+--  STEP 2 - Save & Restore
+--=============================================
+
+local function SavePart(part)
+    if not OriginalProps[part] then
+        OriginalProps[part] = {
+            Material = part.Material,
+            Color = part.Color
+        }
+    end
+end
+
+local function RestorePart(part)
+    local data = OriginalProps[part]
+    if data then
+        part.Material = data.Material
+        part.Color = data.Color
+        OriginalProps[part] = nil
+    end
+end
+
+
+--=============================================
+--  STEP 3 - Individual Charm Functions
+--=============================================
+
+-- SELF CHARM
+local function ApplySelfCharm(Char)
+    for _, v in ipairs(Char:GetDescendants()) do
+        if v:IsA("BasePart") and v.Parent:IsA("Model") then
+            SavePart(v)
+            v.Material = Enum.Material.ForceField
+            v.Color = Black
+        end
+    end
+end
+
+local function RemoveSelfCharm(Char)
+    for _, v in ipairs(Char:GetDescendants()) do
+        if v:IsA("BasePart") and v.Parent:IsA("Model") then
+            RestorePart(v)
+        end
+    end
+end
+
+
+-- ACCESSORIES CHARM
+local function ApplyAccCharm(Char)
+    for _, acc in ipairs(Char:GetChildren()) do
+        if acc:IsA("Accessory") and acc:FindFirstChild("Handle") then
+            SavePart(acc.Handle)
+            acc.Handle.Material = Enum.Material.ForceField
+            acc.Handle.Color = Black
+        end
+    end
+end
+
+local function RemoveAccCharm(Char)
+    for _, acc in ipairs(Char:GetChildren()) do
+        if acc:IsA("Accessory") and acc:FindFirstChild("Handle") then
+            RestorePart(acc.Handle)
+        end
+    end
+end
+
+
+-- TOOL CHARM
+local function ApplyToolCharm(Char)
+    for _, tool in ipairs(Char:GetChildren()) do
+        if tool:IsA("Tool") then
+            for _, v in ipairs(tool:GetDescendants()) do
+                if v:IsA("BasePart") then
+                    SavePart(v)
+                    v.Material = Enum.Material.ForceField
+                    v.Color = Black
+                end
+            end
+        end
+    end
+end
+
+local function RemoveToolCharm(Char)
+    for _, tool in ipairs(Char:GetChildren()) do
+        if tool:IsA("Tool") then
+            for _, v in ipairs(tool:GetDescendants()) do
+                if v:IsA("BasePart") then
+                    RestorePart(v)
+                end
+            end
+        end
+    end
+end
+
+
+--=============================================
+--  STEP 4 - Update Chams (Master Controller)
+--=============================================
+
+local function UpdateChams()
+    local Char = Player.Character
+    if not Char then return end
+
+    -- SELF
+    if CharmStates.Self then
+        ApplySelfCharm(Char)
+    else
+        RemoveSelfCharm(Char)
+    end
+
+    -- ACCESSORIES
+    if CharmStates.Accessories then
+        ApplyAccCharm(Char)
+    else
+        RemoveAccCharm(Char)
+    end
+
+    -- TOOLS
+    if CharmStates.Tools then
+        ApplyToolCharm(Char)
+    else
+        RemoveToolCharm(Char)
+    end
+end
+
+
+--=============================================
+--  STEP 5 - Respawn & Tool Handling
+--=============================================
+
+Player.CharacterAdded:Connect(function(Char)
+    task.wait(0.3)
+    UpdateChams()
+
+    local c = Char.ChildAdded:Connect(function(child)
+        if child:IsA("Tool") then
+            task.wait(0.1)
+            UpdateChams()
+        end
+    end)
+
+    table.insert(CharmConnections, c)
+end)
+
 getgenv().stile = {
     hitbox_expander = {
         Enabled = false,
@@ -1192,6 +1355,7 @@ local imp = Tabs.visuals:AddRightGroupbox('important')
 local blatant = Tabs.visuals:AddRightGroupbox('Blatant')
 local hvh = Tabs.raging:AddLeftGroupbox('HVH Orbit')
 local ant = Tabs.visuals:AddRightGroupbox('Antilocks')
+local charm = Tabs.visuals:AddRightGroupbox('Charms') 
 local at = Tabs.raging:AddRightGroupbox('Autos')
 
 getgenv().AutoReloadEnabled = false
@@ -1758,19 +1922,30 @@ ESPGroup:AddToggle("ambient_toggle", {
     end
 })
 
-local LoadedExtraScript = false
-
-ESPGroup:AddToggle('ForceField', {
-    Text = 'ForceField',
+charm:AddToggle('SelfCharm', {
+    Text = 'Self Charm',
     Default = false,
     Callback = function(v)
-        if v == true and not LoadedExtraScript then
-            LoadedExtraScript = true
-            loadstring(game:HttpGet("https://pastebin.com/raw/znc5VEJY"))()
-            if library then
-                library:Notify("ForceField Script Loaded", 2)
-            end
-        end
+        CharmStates.Self = v
+        UpdateChams()
+    end
+})
+
+charm:AddToggle('AccCharm', {
+    Text = 'Accessories Charm',
+    Default = false,
+    Callback = function(v)
+        CharmStates.Accessories = v
+        UpdateChams()
+    end
+})
+
+charm:AddToggle('ToolCharm', {
+    Text = 'Tool Charm',
+    Default = false,
+    Callback = function(v)
+        CharmStates.Tools = v
+        UpdateChams()
     end
 })
 
