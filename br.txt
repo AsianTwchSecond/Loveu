@@ -1442,14 +1442,6 @@ main:AddToggle("stats_enemy", {
     end
 })
 
-main:AddToggle("view_at_toggle", {
-    Text = "View At",
-    Default = false,
-    Callback = function(state)
-        getgenv().Divine_ViewAt = state
-    end
-})
-
 main:AddToggle('enable_aav', {
     Text = 'Enable AntiAimViewer',
     Default = false,
