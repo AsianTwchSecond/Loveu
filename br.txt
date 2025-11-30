@@ -1100,49 +1100,42 @@ end)
 
 getgenv().Divine.Visualize = getgenv().Divine.Visualize or {enabled = false}
 
-local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local Camera = workspace.CurrentCamera
 local LocalPlayer = Players.LocalPlayer
 
-local highlight = Instance.new("Highlight")
-highlight.FillColor = Color3.fromRGB(10, 10, 10)
-highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
-highlight.FillTransparency = 0.4
-highlight.OutlineTransparency = 0
-highlight.Enabled = false
-highlight.Parent = game:GetService("CoreGui")
+-- UI for small image
+local VisualizeGui = Instance.new("ScreenGui")
+VisualizeGui.Parent = game.CoreGui
+VisualizeGui.Enabled = true
 
-local dot = Drawing.new("Circle")
-dot.Color = Color3.fromRGB(250, 250, 250)
-dot.Thickness = 2
-dot.Filled = true
-dot.Radius = 4
-dot.Visible = false
+local Img = Instance.new("ImageLabel")
+Img.Size = UDim2.new(0, 10, 0, 10)  -- small like dot size
+Img.BackgroundTransparency = 1
+Img.Image = "rbxassetid://11722153703"   -- <<<< IMAGE ID REPLACED HERE
+Img.Visible = false
+Img.Parent = VisualizeGui
 
 RunService.RenderStepped:Connect(function()
     if not getgenv().Divine.Visualize.enabled then
-        highlight.Enabled = false
-        dot.Visible = false
+        Img.Visible = false
         return
     end
 
-    local target = getgenv().Divine.Targetaim and getgenv().Divine.Targetaim.target
-    if target and target.Character then
-        local hrp = target.Character:FindFirstChild("HumanoidRootPart")
+    local target = getgenv().Divine.Targetaim.target
+    if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
+        local hrp = target.Character.HumanoidRootPart
+        local pos, onScreen = Camera:WorldToViewportPoint(hrp.Position)
 
-        highlight.Adornee = target.Character
-        highlight.Enabled = true
-
-        if hrp then
-            local pos, onScreen = workspace.CurrentCamera:WorldToViewportPoint(hrp.Position)
-            dot.Visible = onScreen
-            if onScreen then
-                dot.Position = Vector2.new(pos.X, pos.Y)
-            end
+        if onScreen then
+            Img.Visible = true
+            Img.Position = UDim2.new(0, pos.X - (Img.AbsoluteSize.X / 2), 0, pos.Y - (Img.AbsoluteSize.Y / 2))
+        else
+            Img.Visible = false
         end
     else
-        highlight.Enabled = false
-        dot.Visible = false
+        Img.Visible = false
     end
 end)
 
