@@ -16,8 +16,6 @@ getgenv().triggerbot = getgenv().triggerbot or {
     BlacklistedTools = {},
 }
 
-getgenv().Divine.TeamCheck = false
-
 getgenv().stile = {
     hitbox_expander = {
         Enabled = false,
@@ -237,38 +235,24 @@ local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 local Camera = workspace.CurrentCamera
 
 local function FindNearestEnemy()
-    local closest = nil
-    local shortestDist = math.huge
-
-    for _, plr in ipairs(Players:GetPlayers()) do
-        if plr ~= LocalPlayer 
-        and plr.Character 
-        and plr.Character:FindFirstChild("HumanoidRootPart") 
-        and plr.Character:FindFirstChild("Humanoid") then
-
-            -- TEAM CHECK
-            if getgenv().Divine.TeamCheck then
-                if plr.Team == LocalPlayer.Team then
-                    continue
-                end
-            end
-
-            local pos = plr.Character.HumanoidRootPart.Position
-            local screenPos, onScreen = Camera:WorldToViewportPoint(pos)
-
-            if onScreen then
-                local dist = (Vector2.new(screenPos.X, screenPos.Y) - Camera.ViewportSize / 2).Magnitude
-                if dist < shortestDist then
-                    shortestDist = dist
-                    closest = plr
-                end
-            end
-        end
-    end
-
-    return closest
+  local closest = nil
+	local shortestDist = math.huge
+	for _, plr in ipairs(Players:GetPlayers()) do
+		if plr ~= LocalPlayer and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+			local pos = plr.Character.HumanoidRootPart.Position
+			local screenPos, onScreen = Camera:WorldToViewportPoint(pos)
+			if onScreen then
+				local dist = (Vector2.new(screenPos.X, screenPos.Y) - Camera.ViewportSize / 2).Magnitude
+				if dist < shortestDist then
+					shortestDist = dist
+					closest = plr
+				end
+			end
+		end
+	end
+	return closest
 end
-tgv
+
 local ScreenGui = Instance.new("ScreenGui")
 local Frame = Instance.new("Frame")
 local TextButton = Instance.new("ImageButton")
@@ -1202,7 +1186,6 @@ local main = Tabs.combat:AddLeftGroupbox('Main Settings')
 local air = Tabs.combat:AddRightGroupbox('Air Settings')
 local ag = Tabs.combat:AddRightGroupbox('Anti ground shots')
 local speed = Tabs.combat:AddRightGroupbox('CFrame')
-local stuf = Tabs.combat:AddRightGroupbox('usefull')
 local hit_group = Tabs.visuals:AddLeftGroupbox('Hit Sounds')
 local circleBox = Tabs.visuals:AddLeftGroupbox('Visuals')
 local imp = Tabs.visuals:AddRightGroupbox('important')
@@ -1976,14 +1959,6 @@ speed:AddSlider('cframe_speed', {
     Compact = false,
     Callback = function(value)
         getgenv().cframe.settings.speed = value
-    end
-})
-
-stuf:AddToggle('teamcheck', {
-    Text = 'Team Check',
-    Default = false,
-    Callback = function(v)
-        getgenv().Divine.TeamCheck = v
     end
 })
 
