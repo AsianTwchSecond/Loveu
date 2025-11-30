@@ -1642,7 +1642,7 @@ getgenv().DivineAmbient = {
     Color = Color3.fromRGB(120, 120, 255)
 }
 
-local visu = tabs.visuals:AddRightGroupbox('Visualz')
+local visu = tabs.visuals:AddRightGroupbox('Visuals')
 
 visu:AddToggle("ambient_toggle", {
     Text = "Ambient",
