@@ -1642,17 +1642,24 @@ getgenv().DivineAmbient = {
     Color = Color3.fromRGB(120, 120, 255)
 }
 
-local visu = tabs.visuals:AddRightGroupbox('Visuals')
-
-visu:AddToggle("ambient_toggle", {
+ESPGroup:AddToggle("ambient_toggle", {
     Text = "Ambient",
     Default = false,
     Callback = function(state)
-        getgenv().DivineAmbient.Enabled = state
         if state then
-            ApplyAmbient()
+            -- ON: Apply ambient
+            local Lighting = game:GetService("Lighting")
+            Lighting.Ambient = Color3.fromRGB(120, 120, 255)
+            Lighting.OutdoorAmbient = Color3.fromRGB(120, 120, 255)
+            Lighting.EnvironmentDiffuseScale = 1
+            Lighting.EnvironmentSpecularScale = 1
         else
-            ResetAmbient()
+            -- OFF: Reset to default
+            local Lighting = game:GetService("Lighting")
+            Lighting.Ambient = Color3.fromRGB(127, 127, 127)
+            Lighting.OutdoorAmbient = Color3.fromRGB(127, 127, 127)
+            Lighting.EnvironmentDiffuseScale = 0
+            Lighting.EnvironmentSpecularScale = 0
         end
     end
 })
