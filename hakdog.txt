@@ -177,7 +177,16 @@ getgenv().Divine = {
 }
 }
 
-
+getgenv().crosshair = {
+    enabled = true,
+    mode = "static", -- static, spin, pulse
+    radius = 20,
+    size = 10,
+    thickness = 2,
+    spinSpeed = 2,
+    color = Color3.fromRGB(255, 255, 255),
+    outline = true
+}
 
 local Window = library:CreateWindow({
     Title = 'Eclipse',
