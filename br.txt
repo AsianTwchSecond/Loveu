@@ -316,6 +316,7 @@ getgenv().Divine = {
   Camlock = {
     enabled = true,
     resolver = false,
+    resolvermode = "Recalculate"
     HorizontalPrediction = 0.1,
     VerticalPrediction = 0.1,
     HitPart = "HumanoidRootPart",
@@ -2675,4 +2676,4 @@ function ResetAmbient()
     -- reset to Roblox default
     Lighting.Ambient = Color3.fromRGB(127, 127, 127)
     Lighting.OutdoorAmbient = Color3.fromRGB(127, 127, 127)
-end 
+end
