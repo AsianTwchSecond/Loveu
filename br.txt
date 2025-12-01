@@ -317,6 +317,7 @@ getgenv().Divine = {
     enabled = true,
     resolver = false,
     resolvermode = "Recalculate"
+
     HorizontalPrediction = 0.1,
     VerticalPrediction = 0.1,
     HitPart = "HumanoidRootPart",
@@ -1608,27 +1609,20 @@ main:AddToggle("AutoPrediction", {
         end
 })
 
-main:AddToggle("ResolverEnabled", {
+ResolverToggle = main:AddToggle("ResolverEnabled", {
     Text = "Resolver",
-    Default = false,
+    Default = getgenv().Divine.Camlock.resolver,
     Callback = function(Value)
-        Eclipse.lol.ResolverEnabled = Value
-        print("Resolver:", Value)
+        getgenv().Divine.Camlock.resolver = Value
     end
 })
 
- main:AddDropdown("ResolverType", {
+ResolverDropdown = main:AddDropdown("ResolverType", {
     Text = "Resolver Mode",
-    Default = "Recalculate",
-    Values = {
-        "Recalculate",
-        "MoveDirection",
-        "LookVector"
-    },
-    Multi = false,
+    Default = getgenv().Divine.Camlock.resolvermode,
+    Values = { "Recalculate", "MoveDirection", "LookVector" },
     Callback = function(Option)
-        Eclipse.lol.RESOLVER = Option
-        print("Resolver Mode:", Option)
+        getgenv().Divine.Camlock.resolvermode = Option
     end
 })
 
