@@ -317,7 +317,6 @@ getgenv().Divine = {
     enabled = true,
     resolver = false,
     resolvermode = "Recalculate"
-
     HorizontalPrediction = 0.1,
     VerticalPrediction = 0.1,
     HitPart = "HumanoidRootPart",
