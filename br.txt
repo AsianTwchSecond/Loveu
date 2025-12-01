@@ -1608,7 +1608,6 @@ main:AddToggle("AutoPrediction", {
         end
 })
 
-ResolverToggle = 
 main:AddToggle("ResolverEnabled", {
     Text = "Resolver",
     Default = false,
@@ -1618,7 +1617,7 @@ main:AddToggle("ResolverEnabled", {
     end
 })
 
-ResolverDropdown = main:AddDropdown("ResolverType", {
+ main:AddDropdown("ResolverType", {
     Text = "Resolver Mode",
     Default = "Recalculate",
     Values = {
