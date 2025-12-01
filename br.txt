@@ -375,7 +375,7 @@ local Options = library.Options
 
 local Tabs = {
     combat = Window:AddTab("Combat", "crosshair"),
-         raging = Window:AddTab("Rage", "eye"),
+	 raging = Window:AddTab("Rage", "eye"),
     visuals = Window:AddTab("Miscellaneous ", "wrench"),
     Settings = Window:AddTab("Settings", "settings")
 }
@@ -400,21 +400,21 @@ local Camera = workspace.CurrentCamera
 
 local function FindNearestEnemy()
   local closest = nil
-        local shortestDist = math.huge
-        for _, plr in ipairs(Players:GetPlayers()) do
-                if plr ~= LocalPlayer and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
-                        local pos = plr.Character.HumanoidRootPart.Position
-                        local screenPos, onScreen = Camera:WorldToViewportPoint(pos)
-                        if onScreen then
-                                local dist = (Vector2.new(screenPos.X, screenPos.Y) - Camera.ViewportSize / 2).Magnitude
-                                if dist < shortestDist then
-                                        shortestDist = dist
-                                        closest = plr
-                                end
-                        end
-                end
-        end
-        return closest
+	local shortestDist = math.huge
+	for _, plr in ipairs(Players:GetPlayers()) do
+		if plr ~= LocalPlayer and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+			local pos = plr.Character.HumanoidRootPart.Position
+			local screenPos, onScreen = Camera:WorldToViewportPoint(pos)
+			if onScreen then
+				local dist = (Vector2.new(screenPos.X, screenPos.Y) - Camera.ViewportSize / 2).Magnitude
+				if dist < shortestDist then
+					shortestDist = dist
+					closest = plr
+				end
+			end
+		end
+	end
+	return closest
 end
 
 local ScreenGui = Instance.new("ScreenGui")
@@ -523,7 +523,7 @@ UserInputService.InputBegan:Connect(function(input, gp)
     --  F KEY (Keyboard Toggle)
     -------------------------------
     if input.KeyCode == Enum.KeyCode.F then
-
+        
         getgenv().Divine.Camlock.enabled = not getgenv().Divine.Camlock.enabled
 
         if getgenv().Divine.Camlock.enabled then
@@ -550,7 +550,7 @@ getgenv().Divine.Targetaim.target = nil
     --  CONTROLLER BUTTON Y
     -------------------------------
     if input.KeyCode == Enum.KeyCode.ButtonY then
-
+        
         getgenv().Divine.Camlock.enabled = not getgenv().Divine.Camlock.enabled
 
         if getgenv().Divine.Camlock.enabled then
@@ -694,43 +694,49 @@ Args[i] = predictedPosition + Vector3.new(0, Yoffset, 0)
     )
 end
 
-if not getgenv().Divine.Camlock.resolver then return end
+if not Divine.Targetaim.enabled then return end
 
-local function onHeartbeat(Target, targetPart)
+local velocity = GetResolverVelocity(Target, targetPart)
+
+local lastPos = nil
+local lastTick = tick()
+
+local function GetResolverVelocity(Target, targetPart)
     local currentTick = tick()
     local currentPos = targetPart.Position
-
     local velocity = Vector3.zero
 
-    local ResolverMode = Divine.Camlock.resolvermode  -- dropdown result
+    local hum = Target.Character and Target.Character:FindFirstChildOfClass("Humanoid")
+    local ResolverMode = getgenv().Divine.Camlock.resolvermode
 
-    -- Recalculate mode
+    -- Recalculate
     if ResolverMode == "Recalculate" then
-        if Divine.lastPos then
-            local delta = currentTick - Divine.lastTick
+        if lastPos then
+            local delta = currentTick - lastTick
             if delta > 0 then
-                local diff = currentPos - Divine.lastPos
+                local diff = currentPos - lastPos
                 velocity = diff / delta
             end
         end
 
-        Divine.lastPos = currentPos
-        Divine.lastTick = currentTick
+        lastPos = currentPos
+        lastTick = currentTick
 
-    -- MoveDirection mode
+    -- MoveDirection
     elseif ResolverMode == "MoveDirection" then
-        local hum = Target.Character:FindFirstChildOfClass("Humanoid")
         if hum then
             velocity = hum.MoveDirection * hum.WalkSpeed
         end
 
-    -- LookVector mode
+    -- LookVector
     elseif ResolverMode == "LookVector" then
-        velocity = targetPart.CFrame.LookVector * (Divine.Camlock.Prediction * 1.5)
+        velocity = targetPart.CFrame.LookVector *
+            (getgenv().Divine.Camlock.HorizontalPrediction * 1.5)
     end
 
     return velocity
 end
+
 
 RunService.Heartbeat:Connect(onHeartbeat)
 
@@ -881,41 +887,41 @@ local function stopAutoPrediction()
     autoPredictionRunning = false
 end
 local function stopAutoPrediction()
-        autoPredictionRunning = false
+	autoPredictionRunning = false
 end
 
 getgenv().exlareCircle = getgenv().exlareCircle or {
-        enabled = false,
-        color = Color3.fromRGB(255, 255, 255),
-        radius = 100,
-        circle = nil
+	enabled = false,
+	color = Color3.fromRGB(255, 255, 255),
+	radius = 100,
+	circle = nil
 }
 
 if not getgenv().exlareCircle.circle then
-        getgenv().exlareCircle.circle = Drawing.new("Circle")
-        getgenv().exlareCircle.circle.Filled = false
-        getgenv().exlareCircle.circle.Thickness = 1
+	getgenv().exlareCircle.circle = Drawing.new("Circle")
+	getgenv().exlareCircle.circle.Filled = false
+	getgenv().exlareCircle.circle.Thickness = 1
 end
 
 function updateexlareCircle()
-        if getgenv().exlareCircle.circle then
-                getgenv().exlareCircle.circle.Visible = getgenv().exlareCircle.enabled
-                getgenv().exlareCircle.circle.Color = getgenv().exlareCircle.color
-                getgenv().exlareCircle.circle.Radius = getgenv().exlareCircle.radius
-                getgenv().exlareCircle.circle.Position = Vector2.new(
-                        workspace.CurrentCamera.ViewportSize.X / 2,
-                        workspace.CurrentCamera.ViewportSize.Y / 2
-                )
-        end
+	if getgenv().exlareCircle.circle then
+		getgenv().exlareCircle.circle.Visible = getgenv().exlareCircle.enabled
+		getgenv().exlareCircle.circle.Color = getgenv().exlareCircle.color
+		getgenv().exlareCircle.circle.Radius = getgenv().exlareCircle.radius
+		getgenv().exlareCircle.circle.Position = Vector2.new(
+			workspace.CurrentCamera.ViewportSize.X / 2,
+			workspace.CurrentCamera.ViewportSize.Y / 2
+		)
+	end
 end
 
 game:GetService("RunService").RenderStepped:Connect(function()
-        if getgenv().exlareCircle.enabled and getgenv().exlareCircle.circle then
-                getgenv().exlareCircle.circle.Position = Vector2.new(
-                        workspace.CurrentCamera.ViewportSize.X / 2,
-                        workspace.CurrentCamera.ViewportSize.Y / 2
-                )
-        end
+	if getgenv().exlareCircle.enabled and getgenv().exlareCircle.circle then
+		getgenv().exlareCircle.circle.Position = Vector2.new(
+			workspace.CurrentCamera.ViewportSize.X / 2,
+			workspace.CurrentCamera.ViewportSize.Y / 2
+		)
+	end
 end)
 
 local old
@@ -962,42 +968,42 @@ tracer.Thickness = 1
 
 getgenv().exlare = getgenv().exlare or {}
 getgenv().exlare.esp = {
-        box = false,
-        tracer = false
+	box = false,
+	tracer = false
 }
 
 RunService.RenderStepped:Connect(function()
-        local target = getgenv().Divine and getgenv().Divine.Targetaim and getgenv().Divine.Targetaim.target
+	local target = getgenv().Divine and getgenv().Divine.Targetaim and getgenv().Divine.Targetaim.target
 
-        if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") and target.Character:FindFirstChild("Head") then
-                local hrp = target.Character.HumanoidRootPart
-                local head = target.Character.Head
+	if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") and target.Character:FindFirstChild("Head") then
+		local hrp = target.Character.HumanoidRootPart
+		local head = target.Character.Head
 
-                local hrpPos, hrpOnScreen = Camera:WorldToViewportPoint(hrp.Position)
-                local headPos, headOnScreen = Camera:WorldToViewportPoint(head.Position)
+		local hrpPos, hrpOnScreen = Camera:WorldToViewportPoint(hrp.Position)
+		local headPos, headOnScreen = Camera:WorldToViewportPoint(head.Position)
 
-                local screenHeight = math.abs(hrpPos.Y - headPos.Y) * 2
-                local boxSize = Vector2.new(screenHeight / 1.5, screenHeight)
+		local screenHeight = math.abs(hrpPos.Y - headPos.Y) * 2
+		local boxSize = Vector2.new(screenHeight / 1.5, screenHeight)
 
-                if getgenv().exlare.esp.box and hrpOnScreen then
-                        box.Size = boxSize
-                        box.Position = Vector2.new(hrpPos.X - boxSize.X / 2, hrpPos.Y - boxSize.Y / 2)
-                        box.Visible = true
-                else
-                        box.Visible = false
-                end
+		if getgenv().exlare.esp.box and hrpOnScreen then
+			box.Size = boxSize
+			box.Position = Vector2.new(hrpPos.X - boxSize.X / 2, hrpPos.Y - boxSize.Y / 2)
+			box.Visible = true
+		else
+			box.Visible = false
+		end
 
-                if getgenv().exlare.esp.tracer and hrpOnScreen then
-                        tracer.From = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y)
-                        tracer.To = Vector2.new(hrpPos.X, hrpPos.Y)
-                        tracer.Visible = true
-                else
-                        tracer.Visible = false
-                end
-        else
-                box.Visible = false
-                tracer.Visible = false
-        end
+		if getgenv().exlare.esp.tracer and hrpOnScreen then
+			tracer.From = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y)
+			tracer.To = Vector2.new(hrpPos.X, hrpPos.Y)
+			tracer.Visible = true
+		else
+			tracer.Visible = false
+		end
+	else
+		box.Visible = false
+		tracer.Visible = false
+	end
 end)
 
 getgenv().hit = {
@@ -1067,36 +1073,36 @@ RunService.PostSimulation:Connect(function()
 end)
 
 getgenv().orbit = {
-        enabled = false,
-        distance = 10,
-        height = 5,
-        speed = 400,
-        angle = 0
+	enabled = false,
+	distance = 10,
+	height = 5,
+	speed = 400,
+	angle = 0
 }
 
 game:GetService("RunService").Heartbeat:Connect(function(dt)
-        if not getgenv().orbit.enabled then return end
+	if not getgenv().orbit.enabled then return end
 
-        local lp = game.Players.LocalPlayer
-        if not lp.Character or not lp.Character:FindFirstChild("HumanoidRootPart") then return end
+	local lp = game.Players.LocalPlayer
+	if not lp.Character or not lp.Character:FindFirstChild("HumanoidRootPart") then return end
 
-        local target = getgenv().Divine and getgenv().Divine.Camlock and getgenv().Divine.Camlock.target
-        if not target or not target.Character or not target.Character:FindFirstChild("HumanoidRootPart") then return end
+	local target = getgenv().Divine and getgenv().Divine.Camlock and getgenv().Divine.Camlock.target
+	if not target or not target.Character or not target.Character:FindFirstChild("HumanoidRootPart") then return end
 
-        local root = lp.Character.HumanoidRootPart
-        local targetRoot = target.Character.HumanoidRootPart
+	local root = lp.Character.HumanoidRootPart
+	local targetRoot = target.Character.HumanoidRootPart
 
-        getgenv().orbit.angle += dt * getgenv().orbit.speed
-        local angleRad = math.rad(getgenv().orbit.angle)
+	getgenv().orbit.angle += dt * getgenv().orbit.speed
+	local angleRad = math.rad(getgenv().orbit.angle)
 
-        local offset = Vector3.new(
-                math.cos(angleRad) * getgenv().orbit.distance,
-                getgenv().orbit.height,
-                math.sin(angleRad) * getgenv().orbit.distance
-        )
+	local offset = Vector3.new(
+		math.cos(angleRad) * getgenv().orbit.distance,
+		getgenv().orbit.height,
+		math.sin(angleRad) * getgenv().orbit.distance
+	)
 
-        local orbitPosition = targetRoot.Position + offset
-        root.CFrame = CFrame.new(orbitPosition, targetRoot.Position)
+	local orbitPosition = targetRoot.Position + offset
+	root.CFrame = CFrame.new(orbitPosition, targetRoot.Position)
 end)
 
 getgenv().Divine.Visualize = getgenv().Divine.Visualize or {enabled = false}
@@ -1597,15 +1603,15 @@ main:AddToggle('enable_aav', {
 })
 
 main:AddToggle("AutoPrediction", {
-        Text = "Auto Prediction",
-        Default = false,
-        Callback = function(state)
-                if state then
-                        startAutoPrediction()
-                else
-                        stopAutoPrediction()
-                end
-        end
+	Text = "Auto Prediction",
+	Default = false,
+	Callback = function(state)
+		if state then
+			startAutoPrediction()
+		else
+			stopAutoPrediction()
+		end
+	end
 })
 
 ResolverToggle = main:AddToggle("ResolverEnabled", {
@@ -1690,7 +1696,7 @@ main:AddInput("HitboxSizeInput", {
         local size = tonumber(value)
         if size then
             getgenv().stile.hitbox_expander.Size = size
-
+            
             print("Hitbox size set to:", size)
         end
     end
@@ -1706,34 +1712,34 @@ main:AddToggle("SelfChamsToggle", {
 })
 
 circleBox:AddToggle("circle_enabled", {
-        Text = "Enable FOV",
-        Default = getgenv().exlareCircle.enabled,
-        Callback = function(state)
-                getgenv().exlareCircle.enabled = state
-                updateexlareCircle()
-        end
+	Text = "Enable FOV",
+	Default = getgenv().exlareCircle.enabled,
+	Callback = function(state)
+		getgenv().exlareCircle.enabled = state
+		updateexlareCircle()
+	end
 })
 
 circleBox:AddInput("circle_radius", {
-        Text = "FOV Radius",
-        Default = tostring(getgenv().exlareCircle.radius),
-        Numeric = true,
-        Finished = true,
-        Callback = function(val)
-                local number = tonumber(val)
-                if number then
-                        getgenv().exlareCircle.radius = number
-                        updateexlareCircle()
-                end
-        end
+	Text = "FOV Radius",
+	Default = tostring(getgenv().exlareCircle.radius),
+	Numeric = true,
+	Finished = true,
+	Callback = function(val)
+		local number = tonumber(val)
+		if number then
+			getgenv().exlareCircle.radius = number
+			updateexlareCircle()
+		end
+	end
 })
 
 circleBox:AddToggle("crosshair_enabled", {
-        Text = "Enable Crosshair",
-        Default = getgenv().crosshair.enabled,
-        Callback = function(state)
-                getgenv().crosshair.enabled = state
-        end
+	Text = "Enable Crosshair",
+	Default = getgenv().crosshair.enabled,
+	Callback = function(state)
+		getgenv().crosshair.enabled = state
+	end
 })
 
 circleBox:AddDropdown('Crosshair_Type', {
@@ -1746,16 +1752,16 @@ circleBox:AddDropdown('Crosshair_Type', {
 })
 
 circleBox:AddInput("crosshair_radius", {
-        Text = "Crosshair Radius",
-        Default = tostring(getgenv().crosshair.radius),
-        Numeric = true,
-        Finished = true,
-        Callback = function(val)
-                local num = tonumber(val)
-                if num then
-                        getgenv().crosshair.radius = num
-                end
-        end
+	Text = "Crosshair Radius",
+	Default = tostring(getgenv().crosshair.radius),
+	Numeric = true,
+	Finished = true,
+	Callback = function(val)
+		local num = tonumber(val)
+		if num then
+			getgenv().crosshair.radius = num
+		end
+	end
 })
 
 --// SPINBOT SETUP
@@ -1795,19 +1801,19 @@ circleBox:AddSlider("SpinSpeedSlider", {
 end)
 
 circleBox:AddToggle("esp_box", {
-        Text = "Target Box",
-        Default = getgenv().exlare.esp.box,
-        Callback = function(state)
-                getgenv().exlare.esp.box = state
-        end
+	Text = "Target Box",
+	Default = getgenv().exlare.esp.box,
+	Callback = function(state)
+		getgenv().exlare.esp.box = state
+	end
 })
 
 circleBox:AddToggle("esp_tracer", {
-        Text = "Target Tracer",
-        Default = getgenv().exlare.esp.tracer,
-        Callback = function(state)
-                getgenv().exlare.esp.tracer = state
-        end
+	Text = "Target Tracer",
+	Default = getgenv().exlare.esp.tracer,
+	Callback = function(state)
+		getgenv().exlare.esp.tracer = state
+	end
 })
 
 blatant:AddButton("Load WalkSpeed", function()
