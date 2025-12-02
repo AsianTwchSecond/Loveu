@@ -316,7 +316,8 @@ getgenv().Divine = {
   Camlock = {
     enabled = true,
     resolver = false,
-    Prediction = 0.1,
+    HorizontalPrediction = 0.1,
+    VerticalPrediction = 0.1,
     HitPart = "HumanoidRootPart",
     target = nil
   },
@@ -325,17 +326,18 @@ getgenv().Divine = {
     enabled = true,
     target = nil,
     predictionEnabled = true,
-    Prediction = 0.1,
+    HorizontalPrediction = 0.1,
+    VerticalPrediction = 0.1,
     HitPart = "HumanoidRootPart",
     Method = "Namecall"
   },
 
   AutoAir = {
-     enabled = true,
-     jumpOffset = 0.8,
-     delay = 0.1,
-     AirPart = "RightFoot"
-  }
+   enabled = true,
+   jumpOffset = -0.20,
+   delay = 0.22,
+   AirPart = "RightFoot"
+}
 }
 
 getgenv().crosshair = {
@@ -575,10 +577,13 @@ RunService.Heartbeat:Connect(function()
         local camTarget = Divine.Camlock.target
         if camTarget and camTarget.Character then
             local camPart = camTarget.Character:FindFirstChild(Divine.Camlock.HitPart)
-       if camPart then
-    local camPredicted = camPart.Position
-        + (camPart.Velocity * Divine.Camlock.Prediction)
-        + Vector3.new(0, Divine.AutoAir.jumpOffset, 0)
+            if camPart then
+                local camPredicted = camPart.Position
+    + Vector3.new(
+        camPart.Velocity.X * Divine.Camlock.HorizontalPrediction,
+        camPart.Velocity.Y * Divine.Camlock.VerticalPrediction,
+        camPart.Velocity.Z * Divine.Camlock.HorizontalPrediction
+    )
 
                 local camGoal = CFrame.new(Camera.CFrame.Position, camPredicted)
                 Camera.CFrame = Camera.CFrame:Lerp(camGoal, Divine.Settings.Smoothness)
@@ -616,18 +621,27 @@ if Divine.Targetaim.Method == "Namecall" then
         local Method = tostring(getnamecallmethod())
         if not checkcaller() and Method == "FireServer" then
             for i, Arg in pairs(Args) do
-           if typeof(Arg) == "Vector3" and Divine.Targetaim.enabled then
-    local Target = Divine.Targetaim.target
-    if Target and Target.Character and Divine.Targetaim.HitPart and Target.Character[Divine.Targetaim.HitPart] then
-        local TargetPart = Target.Character[Divine.Targetaim.HitPart]
+                if typeof(Arg) == "Vector3" and Divine.Targetaim.enabled then
+                    local Target = Divine.Targetaim.target
+                    if Target and Target.Character and Divine.Targetaim.HitPart and Target.Character[Divine.Targetaim.HitPart] then
+                        local TargetPart = Target.Character[Divine.Targetaim.HitPart]
+                        local offset = Divine.AutoAir and Divine.AutoAir.jumpOffset or 0
+                        local predictedPosition = TargetPart.Position
+                            + Vector3.new(
+    TargetPart.Velocity.X * Divine.Targetaim.HorizontalPrediction,
+    TargetPart.Velocity.Y * Divine.Targetaim.VerticalPrediction,
+    TargetPart.Velocity.Z * Divine.Targetaim.HorizontalPrediction
+)
+                         + Vector3.new(0, Divine.AutoAir.jumpOffset or 0, 0)
 
-        local predictedPosition = TargetPart.Position
-            + (TargetPart.Velocity * Divine.Targetaim.Prediction)
-            + Vector3.new(0, Divine.AutoAir.jumpOffset, 0)
-
-        Args[i] = predictedPosition
-    end
-    return __namecall(Self, unpack(Args))
+                        Args[i] = predictedPosition
+                    end
+                    return __namecall(Self, unpack(Args))
+                end
+            end
+        end
+        return __namecall(Self, ...)
+    end))
 end
 
 local function setup_hooks()
@@ -851,8 +865,11 @@ local function startAutoPrediction()
                 pred = 0.1404715572
             end
 
-           getgenv().Divine.Targetaim.Prediction = pred
-getgenv().Divine.Camlock.Prediction = pred
+           getgenv().Divine.Targetaim.HorizontalPrediction = pred
+getgenv().Divine.Targetaim.VerticalPrediction = pred
+
+getgenv().Divine.Camlock.HorizontalPrediction = pred
+getgenv().Divine.Camlock.VerticalPrediction = pred
 
             task.wait(1)
         end
@@ -1615,13 +1632,23 @@ main:AddDropdown('hitpart', {
     end
 })
 
-main:AddInput('Prediction', {
-    Text = 'Prediction',
-    Default = getgenv().Divine.Targetaim.Prediction,
+main:AddInput('HorizontalPrediction', {
+    Text = 'Horizontal Prediction',
+    Default = getgenv().Divine.Targetaim.HorizontalPrediction,
     Callback = function(val)
         local num = tonumber(val) or 0.1
-        getgenv().Divine.Targetaim.Prediction = num
-        getgenv().Divine.Camlock.Prediction = num
+        getgenv().Divine.Targetaim.HorizontalPrediction = num
+        getgenv().Divine.Camlock.HorizontalPrediction = num
+    end
+})
+
+main:AddInput('VerticalPrediction', {
+    Text = 'Vertical Prediction',
+    Default = getgenv().Divine.Targetaim.VerticalPrediction,
+    Callback = function(val)
+        local num = tonumber(val) or 0.1
+        getgenv().Divine.Targetaim.VerticalPrediction = num
+        getgenv().Divine.Camlock.VerticalPrediction = num
     end
 })
 
